@@ -1,0 +1,61 @@
+from collections import deque, defaultdict
+from math import isqrt
+class Solution:
+    def minJumps(self, nums: List[int]) -> int:
+        n = len(nums)
+
+        def is_prime(x):
+            if x < 2:
+                return False
+            for i in range(2, isqrt(x) + 1):
+                if x % i == 0:
+                    return False
+            return True
+
+        max_val = max(nums)
+
+        divisibles = defaultdict(list)
+
+        for i, val in enumerate(nums):
+            temp = val
+            factors = set()
+
+            d = 2
+            while d * d <= temp:
+                while temp % d == 0:
+                    factors.add(d)
+                    temp //= d
+                d += 1
+
+            if temp > 1:
+                factors.add(temp)
+
+            for f in factors:
+                divisibles[f].append(i)
+
+        q = deque([(0, 0)])
+        visited = [False] * n
+        visited[0] = True
+
+        used_prime = set()
+
+        while q:
+            i, steps = q.popleft()
+
+            if i == n - 1:
+                return steps
+
+            for ni in (i - 1, i + 1):
+                if 0 <= ni < n and not visited[ni]:
+                    visited[ni] = True
+                    q.append((ni, steps + 1))
+
+            val = nums[i]
+
+            if is_prime(val) and val not in used_prime:
+                used_prime.add(val)
+
+                for ni in divisibles[val]:
+                    if not visited[ni]:
+                        visited[ni] = True
+                        q.append((ni, steps + 1))
